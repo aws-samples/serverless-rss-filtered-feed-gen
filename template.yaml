@@ -1,0 +1,199 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  ScheduleExpression:
+    Type: String
+    Description: The CloudWatch cron or rate expression to determine how often each RSS feed is checked for new content
+    Default: 'rate(1 hour)'
+  RSSFeedQueueVisibilityTimeout:
+    Description: The amount of seconds to wait until a message is made visible again for the channel SQS queue
+    Type: Number
+    Default: 90
+    MinValue: 60
+  RSSFeedQueueRetention:
+    Description: The amount of seconds to retain a message in the channel SQS queue
+    Type: Number
+    Default: 300
+  CloudFrontHostname:
+    Description: The hostname to be used as alias for the CloudFront distribution
+    Type: String
+  R53HostedZoneId:
+    Description: R53 HostedZoneId used to create the alias record for CloudFront
+    Type: String
+
+Outputs:
+  SourcesTableName:
+    Description: Name of RSS source table
+    Value: !Ref SourcesTable
+  SourcesTableArn: 
+    Description: ARN of RSS source table
+    Value: !GetAtt SourcesTable.Arn
+  CloudFrontRSSDistributionURL:
+    Description: The url for the filtered rss feeds
+    Value: !Sub "https://${CloudFrontHostname}/feed/<newfeedname>"
+
+Resources:
+  ## DYNAMO TABLES ##
+
+  # Holds all sources of RSS feeds
+  SourcesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        # 'source' is the URL of the RSS feed
+        Name: source
+        Type: String
+
+  ## ACM certificate for custom CloudFront hostname ##
+  CFHostnameCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Ref CloudFrontHostname
+      DomainValidationOptions: 
+        - DomainName: !Ref CloudFrontHostname
+          HostedZoneId: !Ref R53HostedZoneId
+      ValidationMethod: DNS
+    
+  ## Route53 alias record for custom CloudFront hostname ##
+  R53CFCustomHostnameAlias:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 #Static HostedZoneId for CF Distributions, https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
+      Comment: "Owner: Scott Gerrings"
+      HostedZoneId: !Ref R53HostedZoneId
+      Name: !Ref CloudFrontHostname
+      Type: A
+
+  ## S3 Buckets ##
+
+  RSSFeedS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  RSSFeedS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref RSSFeedS3Bucket
+      PolicyDocument:
+        Id: PolicyForCloudFrontPrivateContent
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${RSSFeedS3Bucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+        
+  RssFeedOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-rss-feed-access-control"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Ref CloudFrontHostname
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CFHostnameCertificate
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+        Origins:
+          - DomainName: !GetAtt RSSFeedS3Bucket.RegionalDomainName
+            Id: !Sub "${AWS::StackName}-s3-origin"
+            OriginAccessControlId: !GetAtt RssFeedOriginAccessControl.Id
+            S3OriginConfig: {}
+        Enabled: True
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: !Sub "${AWS::StackName}-s3-origin"
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_All
+
+  ## SQS QUEUES ##
+
+  # Standard queue for processing each RSS source 
+  ChannelQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: !Ref RSSFeedQueueVisibilityTimeout
+      MessageRetentionPeriod: !Ref RSSFeedQueueRetention
+
+  ## LAMBDA FUNCTIONS ##
+
+  # Runs on a schedule. Reads all sources from the sources DynamoDB table, 
+  # and sends a message to the channel SQS queue for each source.
+  ListSourcesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.9
+      CodeUri: lambdas/list-sources
+      Timeout: 30
+      MemorySize: 256
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SourcesTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt ChannelQueue.QueueName
+      Environment:
+        Variables:
+          DYNAMO_TABLE: !Ref SourcesTable
+          QUEUE_URL: !Ref ChannelQueue
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: !Ref ScheduleExpression
+            Enabled: True
+
+  # Processes messages from the channel SQS queue. Reads the content of
+  # the RSS feed, and extracts channel properties and items. New channel 
+  # items are sent to the item SQS queue for processing, and old channel items
+  # are removed from the items DynamoDB table. 
+  ProcessSourceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.9
+      CodeUri: lambdas/process-source
+      Timeout: 60
+      MemorySize: 256
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt ChannelQueue.QueueName
+        - S3WritePolicy:
+            BucketName: !Ref RSSFeedS3Bucket
+      Environment:
+        Variables:
+          CHANNEL_QUEUE_URL: !Ref ChannelQueue
+          S3_BUCKET: !Ref RSSFeedS3Bucket
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ChannelQueue.Arn
+            Enabled: True
