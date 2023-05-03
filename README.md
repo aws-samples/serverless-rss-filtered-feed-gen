@@ -57,12 +57,15 @@ The SAM project deployes the following resources:
   ---
   
 - [ScheduleExpression]: define how frequently feeds should be updated.
-  - Required: No. Default: rate(1 hour).
+  - Required: No.
+  - Default: rate(1 hour).
   - Available rate expressions: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html#eb-rate-expressions
 - [RSSFeedQueueVisibilityTimeout]: The amount of seconds to wait until a message is made visible again for the RSS feed SQS queue, in case prior processing wasn't successful.
-  - Required: No. Default: 90s (min 60s)
+  - Required: No.
+  - Default: 90s (min 60s)
 - [RSSFeedQueueRetention]: The amount of seconds to retain a message in the channel SQS queue
-  - Required: No. Default: 300s
+  - Required: No.
+  - Default: 300s
 
 ## Build and deployment commands
 
