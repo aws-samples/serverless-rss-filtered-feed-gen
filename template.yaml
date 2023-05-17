@@ -39,12 +39,26 @@ Resources:
 
   # Holds all sources of RSS feeds
   SourcesTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        # 'source' is the URL of the RSS feed
-        Name: source
-        Type: String
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "source"
+          AttributeType: "S"
+        - 
+          AttributeName: "newfeedname"
+          AttributeType: "S"
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      KeySchema: 
+        - 
+          AttributeName: "source"
+          KeyType: "HASH"
+        - 
+          AttributeName: "newfeedname"
+          KeyType: "RANGE"
 
   ## ACM certificate for custom CloudFront hostname ##
   CFHostnameCertificate:
@@ -63,7 +77,6 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 #Static HostedZoneId for CF Distributions, https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
-      Comment: "Owner: Scott Gerrings"
       HostedZoneId: !Ref R53HostedZoneId
       Name: !Ref CloudFrontHostname
       Type: A

@@ -23,9 +23,9 @@ The architecture uses a minimum number of AWS services to keep it easy to mainta
 | Attribute           | Type              | Description                                                                                    	   |
 | ------------------- |:------------------| :--------------------------------------------------------------------------------------------------|
 | source              | String            | An HTTP/S URL for the RSS feed                                                                 	   |
-| filter			  | List of String	  | A list of filter keywords																		   |
-| [newfeedname] 		  | String 			  | Optional: Key of the filtered stream object on S3, accessible via CloudFront (Default: feed title) |
-| [newfeedtitle] 		  | String 			  | Optional: Titel of filtered feed (Default: title of source feed)				     			   |
+| filter			        | List of String	  | A list of filter keywords																		                                       |
+| newfeedname 		    | String 			      | Key (filename) of the filtered stream object on S3, accessible via CloudFront                      |
+| [newfeedtitle] 		  | String 			      | Optional: Titel of filtered feed (Default: title of source feed)				     			                 |
 
 ### Process flow example
 
@@ -78,7 +78,7 @@ The SAM project deployes the following resources:
 1. Deploy the serverless application (rss-filtered-feed-gen) to the AWS Cloud
 
     ```bash
-    sam deploy --parameter-overrides KeyName='CloudFrontHostname',KeyValue="<hostname>" KeyName="R53HostedZoneId",KeyValue="<R53 HostedZone Id>"
+    sam deploy --parameter-overrides ParameterKey="CloudFrontHostname",ParameterValue="<hostname>" ParameterKey="R53HostedZoneId",ParameterValue="<R53 HostedZone Id>"
     ```
 
 1. Once deployed; add the first source feed to the DynamoDB table.
