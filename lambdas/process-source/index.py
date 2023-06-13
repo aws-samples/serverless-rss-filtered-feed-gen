@@ -1,4 +1,5 @@
 import boto3
+import re
 import os
 import json
 import logging
@@ -27,7 +28,7 @@ def genFeed(sf, filter, newfeedtitle):
     
     for entry in sf.entries:
         
-        if any(f in entry.description for f in filter):
+        if any(re.search(f, entry.description) for f in filter):
             fe = f.add_entry()
             fe.title(entry.title)
             fe.guid(entry.guid)

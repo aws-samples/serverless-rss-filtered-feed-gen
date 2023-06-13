@@ -20,12 +20,12 @@ The architecture uses a minimum number of AWS services to keep it easy to mainta
 
 ### Sources Table - Schema
 
-| Attribute           | Type              | Description                                                                                    	   |
-| ------------------- |:------------------| :--------------------------------------------------------------------------------------------------|
-| source              | String            | An HTTP/S URL for the RSS feed                                                                 	   |
-| filter			        | List of String	  | A list of filter keywords																		                                       |
-| newfeedname 		    | String 			      | Key (filename) of the filtered stream object on S3, accessible via CloudFront                      |
-| [newfeedtitle] 		  | String 			      | Optional: Titel of filtered feed (Default: title of source feed)				     			                 |
+| Attribute           | Type              | Description                                                                                    	                |
+| ------------------- |:------------------| :---------------------------------------------------------------------------------------------------------------|
+| source              | String            | An HTTP/S URL for the RSS feed                                                                 	                |
+| filter			        | List of String	  | A list of filter keywords. Regex filter are supported too, e.g.: "Europe \(.{0,}Zurich.[^)]{0,}\)"              |
+| newfeedname 		    | String 			      | Key (filename) of the filtered stream object on S3, accessible via CloudFront                                   |
+| [newfeedtitle] 		  | String 			      | Optional: Titel of filtered feed (Default: title of source feed)				     			                              |
 
 ### Process flow example
 

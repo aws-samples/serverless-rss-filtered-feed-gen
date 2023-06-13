@@ -2,3 +2,4 @@ feedgen==0.9.0
 boto3==1.26.114
 python-dateutil==2.8.2
 feedparser==6.0.10
+regex==2023.6.3
