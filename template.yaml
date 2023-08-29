@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
 AWSTemplateFormatVersion: 2010-09-09
 Transform:
 - AWS::Serverless-2016-10-31
@@ -212,7 +215,7 @@ Resources:
       Runtime: python3.9
       CodeUri: lambdas/process-source
       Timeout: 60
-      MemorySize: 256
+      MemorySize: 512
       Policies:
         - SQSPollerPolicy:
             QueueName: !GetAtt ChannelQueue.QueueName

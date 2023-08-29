@@ -111,3 +111,8 @@ The SAM project deployes the following resources:
   1. Optional: for test purposes you can manually run the **rss-filtered-feed-gen-ListSourcesFunction...** Lambda function to trigger the flow. Just issue a test run (no input parameters needed) in the Amazon Lambda console or via CLI.
 # Resources:
 - AWS SAM CLI command reference: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html
+
+# License
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/aws-samples/amazon-eks-arch-apache-solr/blob/main/LICENSE)
+
+This solutions is licensed under the MIT-0 License. See the LICENSE file.

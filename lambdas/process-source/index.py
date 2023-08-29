@@ -1,11 +1,11 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
 import boto3
 import re
 import os
 import json
 import logging
-from datetime import datetime
-import dateutil.parser
-import dateutil.tz
 from feedgen.feed import FeedGenerator
 import feedparser
 
