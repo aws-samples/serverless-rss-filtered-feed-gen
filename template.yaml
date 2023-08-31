@@ -184,9 +184,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.9
-      CodeUri: lambdas/list-sources
-      Timeout: 30
+      Runtime: python3.11
+      CodeUri: lambda/list-sources
+      Timeout: 60
       MemorySize: 256
       Policies:
         - DynamoDBReadPolicy:
@@ -212,8 +212,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: python3.9
-      CodeUri: lambdas/process-source
+      Runtime: python3.11
+      CodeUri: lambda/process-source
       Timeout: 60
       MemorySize: 512
       Policies:

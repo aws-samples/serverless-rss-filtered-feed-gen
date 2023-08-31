@@ -23,7 +23,7 @@ The architecture uses a minimum number of AWS services to keep it easy to mainta
 | Attribute           | Type              | Description                                                                                    	                |
 | ------------------- |:------------------| :---------------------------------------------------------------------------------------------------------------|
 | source              | String            | An HTTP/S URL for the RSS feed                                                                 	                |
-| filter			        | List of String	  | A list of filter keywords. Regex filter are supported too, e.g.: "Europe \(.{0,}Zurich.[^)]{0,}\)"              |
+| filter			        | List of String	  | A list of filter keywords. Regex filter are supported too, e.g.: "Europe (.*?Zurich.*?)\\)"              |
 | newfeedname 		    | String 			      | Key (filename) of the filtered stream object on S3, accessible via CloudFront                                   |
 | [newfeedtitle] 		  | String 			      | Optional: Titel of filtered feed (Default: title of source feed)				     			                              |
 
@@ -35,11 +35,15 @@ In this example the AWS What's New RSS feed is filtered for announcements relate
 
 ---
 
-# Solution deployment
-This application should be deployed using the AWS Serverless Application Model Command Line Interface (AWS SAM CLI). Please fine more about the prerequisits and the installation in the [AWS SAM documentation.](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html).
+## Prerequisites and tools
+This application can be deployed prepackaged via AWS Serverless Application Repository or manually using the AWS Serverless Application Model Command Line Interface (AWS SAM CLI).
 
-In addition Docker is used to simplify Lambda dependency management during the build process. ([Installing Docker to use with the AWS SAM Cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html))
-The SAM project deployes the following resources:
+* Option 1: AWS Serverless Application Repository (https://serverlessrepo.aws.amazon.com/applications/us-east-1/771886312267/serverless-rss-filtered-feed-gen)
+* Option 2: AWS SAM CLI - Prerequisits and installation guide can be found in the [AWS SAM documentation.](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html). In addition Docker is used to simplify Lambda dependency management during the build process. ([Installing Docker to use with the AWS SAM Cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html))
+
+Deployment option independent, you must have a registered domain name, such as example.com, and point it to a Route 53 hosted zone in the same AWS account in which you deploy this solution. For more information, see [Configuring Amazon Route 53 as your DNS service](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html).
+
+This application deployes the following resources:
 - Amazon CloudWatch Event Rule
 - Amazon DynamoDB Table
 - AWS Lambda Functions
@@ -67,7 +71,7 @@ The SAM project deployes the following resources:
   - Required: No.
   - Default: 300s
 
-## Build and deployment commands
+## Build, deployment, configuration and testing
 
 1. Prepare the serverless application (rss-filtered-feed-gen) for the development
    
