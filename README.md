@@ -40,7 +40,7 @@ In this example the AWS What's New RSS feed is filtered for announcements relate
 ## Prerequisites and tools
 This application can be deployed prepackaged via AWS Serverless Application Repository or manually using the AWS Serverless Application Model Command Line Interface (AWS SAM CLI).
 
-* Option 1: AWS Serverless Application Repository (https://serverlessrepo.aws.amazon.com/applications/us-east-1/771886312267/serverless-rss-filtered-feed-gen)
+* Option 1: AWS Serverless Application Repository (https://serverlessrepo.aws.amazon.com/applications/us-east-1/787245235252/serverless-rss-filtered-feed-gen)
 * Option 2: AWS SAM CLI - Prerequisits and installation guide can be found in the [AWS SAM documentation.](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html). In addition Docker is used to simplify Lambda dependency management during the build process. ([Installing Docker to use with the AWS SAM Cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html))
 
 Deployment option independent, you must have a registered domain name, such as example.com, and point it to a Route 53 hosted zone in the same AWS account in which you deploy this solution. For more information, see [Configuring Amazon Route 53 as your DNS service](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html).
