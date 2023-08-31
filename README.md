@@ -3,6 +3,8 @@
 ## Description
 RSS is a popular web syndication format that allows users to view updates to a site. This is a configurable serverless solution that generates filtered rss feeds and makes them public accessible. Defined RSS sources are read at a given interval and new filtered feeds are generated and stored.
 
+⚠️ This template can only be deployed in the *us-east-1* region. The reason for this is the need for a certificate for CloudFront to be created in us-east-1. For deployment in other regions, a stackset for certificate creation in us-east-1 is required.
+
 ---
 
 ## Architecture overview
@@ -72,6 +74,8 @@ This application deployes the following resources:
   - Default: 300s
 
 ## Build, deployment, configuration and testing
+
+⚠️ This template can only be deployed in the *us-east-1* region. The reason for this is the need for a certificate for CloudFront to be created in us-east-1. For deployment in other regions, a stackset for certificate creation in us-east-1 is required.
 
 If you have deployed the application via AWS Serverless Application Repository, you can skip to point 3 (adding feed information to the DynamoDB table).
 
