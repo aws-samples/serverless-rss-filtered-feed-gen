@@ -73,6 +73,8 @@ This application deployes the following resources:
 
 ## Build, deployment, configuration and testing
 
+If you have deployed the application via AWS Serverless Application Repository, you can skip to point 3 (adding feed information to the DynamoDB table).
+
 1. Prepare the serverless application (rss-filtered-feed-gen) for the development
    
     ```bash 
